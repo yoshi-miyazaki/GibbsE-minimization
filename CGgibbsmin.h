@@ -1,9 +1,11 @@
-//
-//  gibbsminCG.h
-//  Gibbs
-//
-//  Created by Yoshi Miyazaki on 2015/04/25.
-//  Modified on 2017/4/8
+/*
+  gibbsminCG.h
+  Gibbs energy minimization by conjugate gradient method
+  
+  by Yoshi Miyazaki on August 4, 2015
+  modified on April 8, 2017
+  All rights reserved.
+*/
 
 #ifndef Gibbs_ConjugateG_h
 #define Gibbs_ConjugateG_h
@@ -23,7 +25,25 @@ const int print = 0;
 
 /*--------------------------------------------------------------------------
  // Def of class: gibbsminCG
+ ... This class provides the equilibrium composition by Gibbs energy minimization,
+ .   based on 
+ .   - Gibbs energy data `MoleculeData_G` and 
+ .   - initial composition defined by `tensor1d<double>`
+ .
+ .   To use,, 
+ .   1. constrcut database:
+ .     -> MoleculeData_G  _m(filename, T, P);
+ .   2. create gibbsminCG object
+ .     -> gibbsminCG      _min(_m, ninit);
+ .   3. get result
+ .     -> nbest = _min.getnbest();
+ .
+ .   Functions:
+ .   - getnbest():    return the equilibrium composition
+ .   - getphase():    return the phase of each species
+ .   - convergence(): check the convergence of calculation
  ---------------------------------------------------------------------------*/
+
 class gibbsminCG{
  public:
     gibbsminCG(MoleculeData_G&, tensor1d<double>&);

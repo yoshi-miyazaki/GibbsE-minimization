@@ -1,10 +1,15 @@
-//
-//  gibbsminCG.cpp
-//  Gibbs new version using projection
-//
-//  Created by Yoshi Miyazaki on 2015/08/04.
-//  Copyright (c) 2015 Yoshi. All rights reserved.
-//
+/*
+  gibbsminCG.cpp
+  Gibbs energy minimization by conjugate gradient method
+  
+  by Yoshi Miyazaki on August 4, 2015
+  All rights reserved.
+*/
+
+/*--------------------------------------------------------------------------
+ // Def of class: gibbsminCG
+ ---> Refer to ./CGgibbsmin.h for explanation
+ ---------------------------------------------------------------------------*/
 
 #include "CGgibbsmin.h"
 
@@ -22,10 +27,10 @@ gibbsminCG::gibbsminCG(MoleculeData_G& moleculelist, tensor1d<double>& n_startin
     
     /* pressure, temperature, and starting vector for conjugate gradient */
     T = list[0].getT();   P = list[0].getP();
-    
     // for (int i=0; i<gibbse.size(); i++){cout << " mu[" << i << "] = " << gibbse[i] << endl;}
     
-    /* non-ideal melt and solid-solution */
+    /* non-ideal melt and solid-solution
+       ... not used unless dealing with magma ocean. */
     tensor1d<double> W0(0.0,6);
     if (is_oxide){
         W0[0] = -125e3;     W0[1] = 1.15e-6;   W0[2] = 1;
@@ -35,16 +40,19 @@ gibbsminCG::gibbsminCG(MoleculeData_G& moleculelist, tensor1d<double>& n_startin
     }
     create_sslist();
     
-    /* mass-balance matrix */
+    /* construct mass-balance matrix 
+       (see Eq.13 of Miyazaki and Korenaga, ApJ 2017) */
     massBalance  massbo(list);
     massm  = massbo.get_massBalance();
     atomic = massbo.get_atomic();
     
-    /* conjugate gradient */
+    /* conjugate gradient
+       ... minimization is peformed here */
     conjugateG();
     //cout << (double)(end-begin)/CLOCKS_PER_SEC << endl;
     
-    /* put back the molecule */
+    /* restore molecules, which are removed by `rm_nonexisting` 
+       nbest.size() will be the same with n_in.size(). */
     if (moleculelist.getnumofMolecule() != list.getnumofMolecule()){
         tensor1d<double> nbest_resize(0.0, moleculelist.getnumofMolecule());
         tensor1d<int>    phase_resize(0.0, moleculelist.getnumofMolecule());
@@ -62,7 +70,8 @@ gibbsminCG::gibbsminCG(MoleculeData_G& moleculelist, tensor1d<double>& n_startin
         // cout << "CG: " << nbest.size() << "\t" << phase.size() << "\t list: " << list.getnumofMolecule() << endl;
     }
 
-    /* check element conservation */
+    /* check results by
+       assuring the conservation of mass (elements) */
     tensor1d<double> qin  = massm.transpose()*n_starting;
     tensor1d<double> qout = massm.transpose()*nbest;
     for (int k=0; k<(int)qin.size(); k++){
