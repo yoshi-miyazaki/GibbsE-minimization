@@ -17,7 +17,6 @@
 #include <typeinfo>
 #include <cstdlib>
 #include <cmath>
-#include <omp.h>
 using namespace std;
 
 /* return square, max, min */

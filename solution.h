@@ -6,7 +6,7 @@
  */
 
 #ifndef GIBBS_solution_h
-#define GIBBS_soltuion_h
+#define GIBBS_solution_h
 
 #include <iostream>
 #include "./tensor.h"

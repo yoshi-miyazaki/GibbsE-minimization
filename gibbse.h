@@ -9,12 +9,11 @@
 #ifndef Gibbs_gibbse_h
 #define Gibbs_gibbse_h
 
-#include <cmath>
 #include <sstream>
-#include <tuple>
-#include <ctime>
-#include "element.h"
 #include "./const.h"
+#include "./element.h"
+
+const int Anderson = 1;
 
 /*--------------------------------------------------------------------------
  Def of class: Molecule_Gibbs
@@ -32,7 +31,7 @@
 class Molecule_Gibbs : public Molecule{
 public:
     Molecule_Gibbs(string, double, double);
-    Molecule_Gibbs(string, double, double, Vector1d<double>&);
+    Molecule_Gibbs(string, double, double, tensor1d<double>);
     double getGibbsE(){return gibbsE;};
     int    getphase() {return phase;};
     
@@ -48,29 +47,27 @@ private:
     double P;
     int    phase;                                    // gas=0, liquid=1, solid=2
     
-    double data_search(string);
+    double data_search(string, tensor1d<double>);
     double GibbsE_Stixrude(double, double, double, double, double, double, double);
-    double GibbsE_EoS(double, double, double, double, double, double, double, double, double);
-    double GibbsE_melting(ifstream&);
-    tuple<double, char> GibbsE_JANAF(ifstream&, string);
-    
-    /* basic functions */
-    void   set_phase(char);
-    double internal_division(double, double, double, double, double);
-    
-    /* functions for Stixrude */
-    double GibbsE_solid(string, double, double);
-    double debyeF_func(double, double, double, double, double);
-    
-    /* fucntions for melt*/
-    double int_VdP(double, double, double, double, double);
-    double int_dSdP(double, double, double, double, double, double);
-    double dGdT(string, double, double);
-    double dGdP(string, double, double);
-
-    /* functions not used */
+    double GibbsE_melting(ifstream&, double);
     double dH1(double, double, double, double, double, double);
     double dS1(double, double, double, double, double, double);
+    void   set_phase(char);
+    
+    /* chem potential for SiO2 */
+    double GibbsE_MgO();
+    double GibbsE_FeO();
+    double GibbsE_SiO2(double, double, double, double, double, double);
+    double int_sqrtCpdT(double, double);
+    double int_SdT(double, double, double, double, double, double, double, double);
+    double int_alVdP(double, double, double, double, double, double);
+    
+    double GibbsE_solid(string, double, double);
+    double debyeF_func(double, double, double, double, double);
+    double int_dSdP(double, double, double, double, double, double);
+    
+    double int_VdP(double, double, double, double, double);
+    double internal_division(double, double, double, double, double);
 };
 
 /*--------------------------------------------------------------------------
@@ -87,24 +84,25 @@ class MoleculeData_G{
 public:
     MoleculeData_G(){};
     MoleculeData_G(string, double, double);
+    MoleculeData_G(string, double, double, tensor1d<double>);
     Molecule_Gibbs& operator[](const int i){return database[i];};  /* Return i'th molecule */
     
-    int    intspec(string);
-    int    getnumofMolecule(){ return int(numofMolecule);};
-    string getlist()               { return list_species; };
-    Vector1d<double> getmolarmass(){ return molarmass;    };
-    tensor1d<double> getmolarmass_t(){ return molarmass.to_tensor(); };
-
+    int               intspec(string);
+    int               getnumofMolecule(){ return int(numofMolecule);};
+    string            getlist()         { return list_species; };
+    tensor1d<int>     getphase();
+    tensor1d<double>  getmolarmass()    { return molarmass;    };
+    
     MoleculeData_G& operator=(const MoleculeData_G&);  /* assign */
     
-    void rm_nonexisting(Vector1d<double>&);            /* delete species that includes elements not used */
-    void rm_nonexisting(tensor1d<double>&);            /* delete species that includes elements not used */
+    /* delete species that includes elements not used */
+    void rm_nonexisting(tensor1d<double>&);
     
 private:
-    size_t numofMolecule;
-    string list_species;
+    size_t                 numofMolecule;
+    string                 list_species;
     vector<Molecule_Gibbs> database;
-    Vector1d<double>       molarmass;
+    tensor1d<double>       molarmass;
     
     void   erase(int);
 };

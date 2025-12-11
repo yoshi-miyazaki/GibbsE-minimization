@@ -5,7 +5,7 @@
   Aug 2, 2017 by Yoshinori
  */
 
-#include "solution.h"
+#include "CGgibbsmin.h"
 
 /*--------------------------------------------------------------------------
  // class: melt
@@ -34,7 +34,9 @@ void melt_mixing::add_endmember(string s1, string s2, string s3){
     end_members[0] = s1;  end_members[1] = s2;  end_members[2] = s3;
 }
 void melt_mixing::add_Margules(double T, double P, tensor1d<double>& v){
-    if (v.size()!= 6){ cout << "in add_Margules(): wrong v.size()... " << endl; exit(2);}
+    if (v.size()!= 6){ cout << "in add_Margules(): wrong v.size()... ";
+        cout << v.size() << endl;
+        exit(2);}
     
     /* calc Margules parameter */
     Wmix.resize(0.0,2);  Wmix = 0.0;
@@ -97,7 +99,7 @@ solution::solution(string s1, string s2, int n){
     contribution.resize(1,2);  group.resize(0,2);
     nmole.resize(0.,2);
     end_members[0] = s1;  end_members[1] = s2;
-    group[0]       = 1;   group[2]       = 2;
+    group[0]       = 1;   group[1]       = 2;
     
     no_sites = n;
 }
@@ -142,6 +144,19 @@ solution::solution(string s1, double c1, int g1, string s2, double c2, int g2, s
     
     no_sites = n;
 }
+/*------------------------------------------------------------*/
+/* operators */
+solution& solution::operator=(const solution& assign){
+    if (this == &assign){ return *this; }
+    
+    this->end_members  = assign.end_members;
+    this->contribution = assign.contribution;
+    this->group        = assign.group;
+    this->nmole        = assign.nmole;
+    this->no_sites     = assign.no_sites;
+
+    return *this;
+}
 bool solution::is_insystem(string _s){
     /* return whether _s is in this solid solution system or not... */
     bool is_in = 0;
@@ -171,7 +186,7 @@ double solution::config(string _s, double nthis){
            nthis > 0   => specify the amount of [_s] 
                           even though it may have a diffrent amount 
                           (especially used when nthis is tiny (non0)  */
-    int no_endmember = end_members.size();   int no_s;
+    int no_endmember = end_members.size();   int no_s = 0;
     for (int i=0; i<no_endmember; i++){
         if (_s == end_members[i]){ no_s = i; break; }
     }
