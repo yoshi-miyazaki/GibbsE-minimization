@@ -854,12 +854,15 @@ double gibbsminCG::melt_vfrac(){
         if (phase[j]==1){ liq[j] = nbest[j];}
         if (phase[j]==0){ gas[j] = nbest[j];}
     }
-    
+
     tensor1d<double> e_mel=(massm.transpose())*liq, e_sol=(massm.transpose())*sol;
-    double v_mel = e_mel[0]*11.3 + e_mel[1]*22.67 + e_mel[2]*12.5;
-    double v_sol =(e_sol[0]*11.3 + e_sol[1]*22.67 + e_sol[2]*12.5)*1.03;
-    
-    return v_mel/(v_mel+v_sol);
+	if (e_mel.size() == 3){
+	    double v_mel = e_mel[0]*11.3 + e_mel[1]*22.67 + e_mel[2]*12.5;
+    	double v_sol =(e_sol[0]*11.3 + e_sol[1]*22.67 + e_sol[2]*12.5)*1.03;    
+	    return v_mel/(v_mel+v_sol);
+	}else{
+		return melt_mfrac();
+	}
 }
 double gibbsminCG::melt_mfrac(){
     int m = n_in.size();
